@@ -56,7 +56,7 @@ class Usercontroller extends Controller
             'role_id' =>$data['role']
           ]);
 
-        return redirect("dashboard")->withSuccess('Great! You have Successfully loggedin');
+        return redirect ()->route("users.index")->withSuccess('Great! You have Successfully loggedin');
     }
 
     /**
@@ -76,9 +76,10 @@ class Usercontroller extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function edit($id)
+    public function edit(User $user)
     {
-        //
+        $roles = Role::all();
+        return view('users.edit', compact('user' , 'roles'));
     }
 
     /**
@@ -88,9 +89,20 @@ class Usercontroller extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function update(Request $request, $id)
+    public function update(Request $request, User $user)
     {
-        //
+        $request->validate([
+            'name' => 'required',
+            'email' => 'required|email',
+            'role' => 'required',
+        ]);
+        $user->name = $request->name;
+        $user->email = $request->email;
+        $user->role_id = $request->role;
+        if(!empty($request->password)) $user->password = Hash::make($request->password);
+        $user->save();
+
+        return redirect()->route('users.index')->withSuccess('Great! You have Successfully loggedin');;
     }
 
     /**
@@ -99,8 +111,9 @@ class Usercontroller extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function destroy($id)
+    public function destroy(User $user)
     {
-        //
+        $user->delete();
+        return redirect()->route('users.index')->with('success','user has been deleted successfully');
     }
 }
